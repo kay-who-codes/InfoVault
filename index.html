@@ -1,0 +1,1110 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>InfoVault — Knowledge Base</title>
+
+  <!-- ═══════════════════════════════════════════════
+       DEVELOPER NOTE: Change the <title> above and
+       the site name in the <header> section below.
+  ═══════════════════════════════════════════════ -->
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Space+Mono:ital,wght@0,400;0,700;1,400&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet" />
+
+  <style>
+    /* ═══════════════════════════════════════════════════════════════
+       THEME VARIABLES — Edit these to restyle the entire page
+    ═══════════════════════════════════════════════════════════════ */
+    :root {
+      --bg:          #0d0f12;
+      --surface:     #161920;
+      --surface-2:   #1e2229;
+      --border:      #2a2f3a;
+      --accent:      #4fffb0;
+      --accent-dim:  #1a3d2e;
+      --text:        #e8eaf0;
+      --text-muted:  #737a8c;
+      --text-faint:  #3d4352;
+      --tag-bg:      #1e2535;
+      --tag-text:    #7ab4ff;
+      --radius:      8px;
+      --radius-lg:   14px;
+      --font-display:'Syne', sans-serif;
+      --font-mono:   'Space Mono', monospace;
+      --transition:  0.18s ease;
+    }
+
+    /* ─── Reset & Base ─────────────────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--font-mono);
+      font-size: 14px;
+      line-height: 1.7;
+      min-height: 100vh;
+    }
+
+    a { color: var(--accent); text-decoration: none; transition: opacity var(--transition); }
+    a:hover { opacity: 0.75; }
+
+    img, video, audio, iframe { display: block; max-width: 100%; border-radius: var(--radius); }
+
+    /* ─── Layout Shell ──────────────────────────────────────────── */
+    .shell {
+      display: grid;
+      grid-template-columns: 260px 1fr;
+      grid-template-rows: 56px 1fr;
+      grid-template-areas:
+        "header header"
+        "sidebar main";
+      min-height: 100vh;
+    }
+
+    /* ─── Header ────────────────────────────────────────────────── */
+    header {
+      grid-area: header;
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      padding: 0 24px;
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    .site-name {
+      font-family: var(--font-display);
+      font-weight: 800;
+      font-size: 18px;
+      letter-spacing: -0.03em;
+      color: var(--text);
+      white-space: nowrap;
+    }
+    .site-name span { color: var(--accent); }
+
+    /* Search bar */
+    .search-wrap {
+      flex: 1;
+      max-width: 520px;
+      position: relative;
+    }
+    .search-wrap svg {
+      position: absolute;
+      left: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--text-muted);
+      pointer-events: none;
+    }
+    #search-input {
+      width: 100%;
+      padding: 8px 12px 8px 38px;
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      color: var(--text);
+      font-family: var(--font-mono);
+      font-size: 13px;
+      outline: none;
+      transition: border-color var(--transition);
+    }
+    #search-input::placeholder { color: var(--text-faint); }
+    #search-input:focus { border-color: var(--accent); }
+
+    /* Filter chips */
+    .filter-chips {
+      display: flex;
+      gap: 6px;
+      flex-wrap: nowrap;
+      overflow-x: auto;
+      padding-right: 4px;
+    }
+    .filter-chips::-webkit-scrollbar { display: none; }
+    .chip {
+      padding: 4px 12px;
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      border-radius: 100px;
+      color: var(--text-muted);
+      font-family: var(--font-mono);
+      font-size: 11px;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: all var(--transition);
+      user-select: none;
+    }
+    .chip:hover, .chip.active {
+      background: var(--accent-dim);
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+
+    /* ─── Sidebar ───────────────────────────────────────────────── */
+    aside {
+      grid-area: sidebar;
+      background: var(--surface);
+      border-right: 1px solid var(--border);
+      padding: 20px 0;
+      position: sticky;
+      top: 56px;
+      height: calc(100vh - 56px);
+      overflow-y: auto;
+    }
+    aside::-webkit-scrollbar { width: 4px; }
+    aside::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+
+    .nav-section-label {
+      font-family: var(--font-display);
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--text-faint);
+      padding: 14px 20px 6px;
+    }
+
+    .nav-link {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 8px 20px;
+      color: var(--text-muted);
+      font-size: 13px;
+      transition: all var(--transition);
+      cursor: pointer;
+      border-left: 2px solid transparent;
+    }
+    .nav-link:hover, .nav-link.active {
+      color: var(--text);
+      background: var(--surface-2);
+      border-left-color: var(--accent);
+    }
+    .nav-link .dot {
+      width: 7px; height: 7px;
+      border-radius: 50%;
+      background: var(--text-faint);
+      flex-shrink: 0;
+    }
+    .nav-link:hover .dot, .nav-link.active .dot { background: var(--accent); }
+
+    /* ─── Main Content ──────────────────────────────────────────── */
+    main {
+      grid-area: main;
+      padding: 32px;
+      overflow-y: auto;
+    }
+
+    /* Section header */
+    .section-header {
+      display: flex;
+      align-items: baseline;
+      gap: 14px;
+      margin-bottom: 24px;
+      padding-bottom: 14px;
+      border-bottom: 1px solid var(--border);
+    }
+    .section-title {
+      font-family: var(--font-display);
+      font-size: 22px;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      color: var(--text);
+    }
+    .section-count {
+      font-size: 12px;
+      color: var(--text-muted);
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      padding: 2px 8px;
+      border-radius: 100px;
+    }
+
+    /* Content grid */
+    .card-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+      gap: 16px;
+      margin-bottom: 48px;
+    }
+
+    /* ─── Cards ─────────────────────────────────────────────────── */
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+      transition: border-color var(--transition), transform var(--transition);
+    }
+    .card:hover {
+      border-color: var(--accent);
+      transform: translateY(-2px);
+    }
+
+    .card-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 14px 16px 10px;
+      border-bottom: 1px solid var(--border);
+    }
+    .card-type-badge {
+      font-family: var(--font-display);
+      font-size: 9px;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      padding: 3px 8px;
+      border-radius: 4px;
+      background: var(--accent-dim);
+      color: var(--accent);
+      flex-shrink: 0;
+    }
+    .card-title {
+      font-family: var(--font-display);
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text);
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .card-body { padding: 14px 16px; }
+    .card-footer {
+      padding: 10px 16px;
+      border-top: 1px solid var(--border);
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+
+    /* Tags */
+    .tag {
+      font-size: 11px;
+      padding: 2px 8px;
+      background: var(--tag-bg);
+      color: var(--tag-text);
+      border-radius: 4px;
+    }
+
+    /* ─── Content Types ─────────────────────────────────────────── */
+
+    /* Text */
+    .content-text {
+      font-size: 13px;
+      color: var(--text-muted);
+      line-height: 1.7;
+    }
+    .content-text p + p { margin-top: 10px; }
+
+    /* Image */
+    .content-image img {
+      width: 100%;
+      max-height: 260px;
+      object-fit: cover;
+      border-radius: var(--radius);
+    }
+    .content-image .caption {
+      font-size: 11px;
+      color: var(--text-faint);
+      margin-top: 8px;
+      font-style: italic;
+    }
+
+    /* Video */
+    .content-video video,
+    .content-video iframe {
+      width: 100%;
+      aspect-ratio: 16/9;
+      border-radius: var(--radius);
+      background: #000;
+      border: none;
+    }
+
+    /* Audio */
+    .content-audio audio {
+      width: 100%;
+      filter: invert(1) hue-rotate(180deg) brightness(0.85);
+      border-radius: var(--radius);
+    }
+
+    /* GIF */
+    .content-gif img {
+      width: 100%;
+      border-radius: var(--radius);
+    }
+
+    /* Hyperlink */
+    .content-link a {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 12px 14px;
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      color: var(--text);
+      font-size: 13px;
+      transition: border-color var(--transition);
+    }
+    .content-link a:hover { border-color: var(--accent); opacity: 1; }
+    .content-link .link-icon { font-size: 16px; flex-shrink: 0; }
+    .content-link .link-label { font-weight: 700; }
+    .content-link .link-url { font-size: 11px; color: var(--text-faint); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+    /* PDF */
+    .content-pdf iframe {
+      width: 100%;
+      height: 340px;
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+    }
+    .pdf-fallback {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 14px;
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+    }
+    .pdf-icon { font-size: 28px; }
+    .pdf-name { font-weight: 700; font-size: 13px; }
+    .pdf-open { font-size: 11px; color: var(--accent); margin-top: 2px; }
+
+    /* Code / pre */
+    .content-code pre {
+      background: #0a0c0f;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 14px;
+      overflow-x: auto;
+      font-size: 12px;
+      color: #a8d8a8;
+      white-space: pre;
+    }
+
+    /* Wide cards (full width) */
+    .card.wide { grid-column: 1 / -1; }
+
+    /* ─── Empty / No-Results State ──────────────────────────────── */
+    .empty-state {
+      grid-column: 1 / -1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 60px 20px;
+      color: var(--text-faint);
+      gap: 12px;
+      text-align: center;
+    }
+    .empty-state .empty-icon { font-size: 42px; }
+    .empty-state .empty-text { font-family: var(--font-display); font-size: 16px; }
+
+    /* ─── Scrollbar ─────────────────────────────────────────────── */
+    main::-webkit-scrollbar { width: 6px; }
+    main::-webkit-scrollbar-thumb { background: var(--border); border-radius: 6px; }
+
+    /* ─── Responsive ────────────────────────────────────────────── */
+    @media (max-width: 800px) {
+      .shell {
+        grid-template-columns: 1fr;
+        grid-template-areas: "header" "main";
+      }
+      aside { display: none; }
+      main { padding: 20px 16px; }
+      .card-grid { grid-template-columns: 1fr; }
+      .filter-chips { display: flex; }
+    }
+
+    /* ─── Fade-in on load ───────────────────────────────────────── */
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(12px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    .card { animation: fadeUp 0.35s ease both; }
+    .card:nth-child(1)  { animation-delay: 0.02s; }
+    .card:nth-child(2)  { animation-delay: 0.06s; }
+    .card:nth-child(3)  { animation-delay: 0.10s; }
+    .card:nth-child(4)  { animation-delay: 0.14s; }
+    .card:nth-child(5)  { animation-delay: 0.18s; }
+    .card:nth-child(6)  { animation-delay: 0.22s; }
+    .card:nth-child(7)  { animation-delay: 0.26s; }
+    .card:nth-child(8)  { animation-delay: 0.30s; }
+  </style>
+
+</head>
+<body>
+
+<div class="shell">
+
+  <!-- ═══════════════════════════════════════════════
+       HEADER
+       Edit: site name, filter chip labels
+  ═══════════════════════════════════════════════ -->
+
+  <header>
+    <div class="site-name">Info<span>Vault</span></div>
+
+```
+<div class="search-wrap">
+  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+    <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
+  </svg>
+  <input id="search-input" type="text" placeholder="Search entries…" autocomplete="off" />
+</div>
+
+<!-- ── TYPE FILTER CHIPS ──────────────────────────
+     Add or remove chips to match your content types.
+     The data-type must match the card's data-type attribute.
+─────────────────────────────────────────────── -->
+<div class="filter-chips">
+  <div class="chip active" data-type="all">All</div>
+  <div class="chip" data-type="text">Text</div>
+  <div class="chip" data-type="image">Image</div>
+  <div class="chip" data-type="video">Video</div>
+  <div class="chip" data-type="audio">Audio</div>
+  <div class="chip" data-type="gif">GIF</div>
+  <div class="chip" data-type="pdf">PDF</div>
+  <div class="chip" data-type="link">Link</div>
+  <div class="chip" data-type="code">Code</div>
+</div>
+```
+
+  </header>
+
+  <!-- ═══════════════════════════════════════════════
+       SIDEBAR NAVIGATION
+       Edit: categories and their nav links.
+       Each href must match a section id below.
+  ═══════════════════════════════════════════════ -->
+
+  <aside>
+    <div class="nav-section-label">Categories</div>
+
+```
+<!-- ── DEVELOPER: Add/rename nav links to match your sections ── -->
+<div class="nav-link active" data-section="section-general">
+  <span class="dot"></span>General
+</div>
+<div class="nav-link" data-section="section-media">
+  <span class="dot"></span>Media
+</div>
+<div class="nav-link" data-section="section-resources">
+  <span class="dot"></span>Resources
+</div>
+<div class="nav-link" data-section="section-references">
+  <span class="dot"></span>References
+</div>
+
+<!-- Add more sections as needed:
+<div class="nav-link" data-section="section-YOUR-ID">
+  <span class="dot"></span>Your Label
+</div>
+-->
+
+<div class="nav-section-label" style="margin-top:12px">Types</div>
+<div class="nav-link" data-type-nav="text"><span class="dot"></span>Text entries</div>
+<div class="nav-link" data-type-nav="image"><span class="dot"></span>Images</div>
+<div class="nav-link" data-type-nav="video"><span class="dot"></span>Videos</div>
+<div class="nav-link" data-type-nav="audio"><span class="dot"></span>Audio</div>
+<div class="nav-link" data-type-nav="gif"><span class="dot"></span>GIFs</div>
+<div class="nav-link" data-type-nav="pdf"><span class="dot"></span>PDFs</div>
+<div class="nav-link" data-type-nav="link"><span class="dot"></span>Links</div>
+<div class="nav-link" data-type-nav="code"><span class="dot"></span>Code</div>
+```
+
+  </aside>
+
+  <!-- ═══════════════════════════════════════════════
+       MAIN CONTENT
+       HOW TO ADD CARDS:
+       1. Copy any card template below.
+       2. Set data-type="text|image|video|audio|gif|pdf|link|code"
+       3. Set data-tags to comma-separated keywords for search.
+       4. Set data-category to the section id it belongs to.
+       5. Fill in the title and content.
+       6. Place it inside the appropriate .card-grid.
+  ═══════════════════════════════════════════════ -->
+
+  <main id="main-content">
+
+```
+<!-- ══════════════════════════════════════════════
+     SECTION: General
+     id must match the nav-link's data-section value
+══════════════════════════════════════════════ -->
+<section id="section-general">
+  <div class="section-header">
+    <span class="section-title">General</span>
+    <span class="section-count" id="count-section-general">0 entries</span>
+  </div>
+
+  <div class="card-grid">
+
+    <!-- ─────────────────────────────────────────────
+         CARD: Text
+         data-type     → used for chip filtering
+         data-tags     → comma-separated search terms
+         data-category → matches section id
+    ───────────────────────────────────────────── -->
+    <div class="card"
+         data-type="text"
+         data-tags="introduction, overview, notes"
+         data-category="section-general">
+      <div class="card-header">
+        <span class="card-type-badge">Text</span>
+        <span class="card-title">Getting Started</span>
+      </div>
+      <div class="card-body">
+        <div class="content-text">
+          <!-- ── DEVELOPER: Replace with your text content ── -->
+          <p>Welcome to InfoVault. This template is designed to host any kind of categorised information in one unified dark-mode interface.</p>
+          <p>Edit the cards, sections, and sidebar navigation to match your own content structure.</p>
+        </div>
+      </div>
+      <div class="card-footer">
+        <!-- ── DEVELOPER: Add/remove tags as needed ── -->
+        <span class="tag">intro</span>
+        <span class="tag">docs</span>
+      </div>
+    </div>
+
+    <!-- ─────────────────────────────────────────────
+         CARD: Hyperlink
+    ───────────────────────────────────────────── -->
+    <div class="card"
+         data-type="link"
+         data-tags="link, reference, website"
+         data-category="section-general">
+      <div class="card-header">
+        <span class="card-type-badge">Link</span>
+        <span class="card-title">Example Hyperlink</span>
+      </div>
+      <div class="card-body">
+        <div class="content-link">
+          <!-- ── DEVELOPER: Replace href and labels ── -->
+          <a href="https://example.com" target="_blank" rel="noopener">
+            <span class="link-icon">🔗</span>
+            <div>
+              <div class="link-label">Example Website</div>
+              <div class="link-url">https://example.com</div>
+            </div>
+          </a>
+        </div>
+        <p class="content-text" style="margin-top:10px">A brief description of what this link leads to and why it's useful.</p>
+      </div>
+      <div class="card-footer">
+        <span class="tag">external</span>
+        <span class="tag">reference</span>
+      </div>
+    </div>
+
+  </div><!-- /card-grid -->
+</section>
+
+
+<!-- ══════════════════════════════════════════════
+     SECTION: Media
+══════════════════════════════════════════════ -->
+<section id="section-media">
+  <div class="section-header">
+    <span class="section-title">Media</span>
+    <span class="section-count" id="count-section-media">0 entries</span>
+  </div>
+
+  <div class="card-grid">
+
+    <!-- ─────────────────────────────────────────────
+         CARD: Image — Embedded from URL
+    ───────────────────────────────────────────── -->
+    <div class="card"
+         data-type="image"
+         data-tags="image, photo, visual"
+         data-category="section-media">
+      <div class="card-header">
+        <span class="card-type-badge">Image</span>
+        <span class="card-title">Image from URL</span>
+      </div>
+      <div class="card-body">
+        <div class="content-image">
+          <!-- ── DEVELOPER: Replace src with your image URL ── -->
+          <img src="https://picsum.photos/seed/infovault/640/360" alt="Sample image description" loading="lazy" />
+          <p class="caption">Caption: Describe this image here.</p>
+        </div>
+      </div>
+      <div class="card-footer">
+        <span class="tag">photo</span>
+        <span class="tag">url</span>
+      </div>
+    </div>
+
+    <!-- ─────────────────────────────────────────────
+         CARD: Image — From local Media folder
+    ───────────────────────────────────────────── -->
+    <div class="card"
+         data-type="image"
+         data-tags="image, local, media folder"
+         data-category="section-media">
+      <div class="card-header">
+        <span class="card-type-badge">Image</span>
+        <span class="card-title">Image from Media Folder</span>
+      </div>
+      <div class="card-body">
+        <div class="content-image">
+          <!-- ── DEVELOPER: Replace filename ── -->
+          <img src="Media/your-image.jpg" alt="Description of the image" loading="lazy" />
+          <p class="caption">Caption: Stored locally in /Media/</p>
+        </div>
+      </div>
+      <div class="card-footer">
+        <span class="tag">local</span>
+        <span class="tag">media</span>
+      </div>
+    </div>
+
+    <!-- ─────────────────────────────────────────────
+         CARD: GIF — Embedded from URL
+    ───────────────────────────────────────────── -->
+    <div class="card"
+         data-type="gif"
+         data-tags="gif, animation, url"
+         data-category="section-media">
+      <div class="card-header">
+        <span class="card-type-badge">GIF</span>
+        <span class="card-title">GIF from URL</span>
+      </div>
+      <div class="card-body">
+        <div class="content-gif">
+          <!-- ── DEVELOPER: Replace src ── -->
+          <img src="https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExd2NqeGFhdjV0dWxldmduZnE5N2hqY213OWVteXFmOWpwcjE2NjU5NiZlcD12MV9naWZzX3RyZW5kaW5nJmN0PWc/3o7abKhOpu0NwenH3O/giphy.gif" alt="Animated GIF description" loading="lazy" />
+        </div>
+      </div>
+      <div class="card-footer">
+        <span class="tag">animation</span>
+        <span class="tag">giphy</span>
+      </div>
+    </div>
+
+    <!-- ─────────────────────────────────────────────
+         CARD: GIF — From local Media folder
+    ───────────────────────────────────────────── -->
+    <div class="card"
+         data-type="gif"
+         data-tags="gif, animation, local"
+         data-category="section-media">
+      <div class="card-header">
+        <span class="card-type-badge">GIF</span>
+        <span class="card-title">GIF from Media Folder</span>
+      </div>
+      <div class="card-body">
+        <div class="content-gif">
+          <!-- ── DEVELOPER: Replace filename ── -->
+          <img src="Media/your-animation.gif" alt="Description of the GIF" loading="lazy" />
+        </div>
+      </div>
+      <div class="card-footer">
+        <span class="tag">local</span>
+        <span class="tag">media</span>
+      </div>
+    </div>
+
+    <!-- ─────────────────────────────────────────────
+         CARD: Video — Embedded from URL (YouTube)
+         For YouTube: use embed URL format:
+         https://www.youtube.com/embed/VIDEO_ID
+    ───────────────────────────────────────────── -->
+    <div class="card wide"
+         data-type="video"
+         data-tags="video, youtube, url"
+         data-category="section-media">
+      <div class="card-header">
+        <span class="card-type-badge">Video</span>
+        <span class="card-title">Video from URL (YouTube / Vimeo)</span>
+      </div>
+      <div class="card-body">
+        <div class="content-video">
+          <!-- ── DEVELOPER: Replace src with your embed URL ── -->
+          <iframe
+            src="https://www.youtube.com/embed/dQw4w9WgXcQ"
+            title="Video title"
+            allowfullscreen
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture">
+          </iframe>
+        </div>
+        <p class="content-text" style="margin-top:10px">Short description of this video and its context.</p>
+      </div>
+      <div class="card-footer">
+        <span class="tag">youtube</span>
+        <span class="tag">tutorial</span>
+      </div>
+    </div>
+
+    <!-- ─────────────────────────────────────────────
+         CARD: Video — From local Media folder
+    ───────────────────────────────────────────── -->
+    <div class="card"
+         data-type="video"
+         data-tags="video, local, media folder"
+         data-category="section-media">
+      <div class="card-header">
+        <span class="card-type-badge">Video</span>
+        <span class="card-title">Video from Media Folder</span>
+      </div>
+      <div class="card-body">
+        <div class="content-video">
+          <!-- ── DEVELOPER: Replace filename. Add multiple <source> for formats ── -->
+          <video controls preload="metadata">
+            <source src="Media/your-video.mp4" type="video/mp4" />
+            <source src="Media/your-video.webm" type="video/webm" />
+            Your browser does not support the video tag.
+          </video>
+        </div>
+      </div>
+      <div class="card-footer">
+        <span class="tag">local</span>
+        <span class="tag">mp4</span>
+      </div>
+    </div>
+
+    <!-- ─────────────────────────────────────────────
+         CARD: Audio — Embedded from URL
+    ───────────────────────────────────────────── -->
+    <div class="card"
+         data-type="audio"
+         data-tags="audio, music, url"
+         data-category="section-media">
+      <div class="card-header">
+        <span class="card-type-badge">Audio</span>
+        <span class="card-title">Audio from URL</span>
+      </div>
+      <div class="card-body">
+        <p class="content-text" style="margin-bottom:12px">Description of this audio file — what it contains and its context.</p>
+        <div class="content-audio">
+          <!-- ── DEVELOPER: Replace src ── -->
+          <audio controls preload="metadata">
+            <source src="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3" type="audio/mpeg" />
+            Your browser does not support the audio element.
+          </audio>
+        </div>
+      </div>
+      <div class="card-footer">
+        <span class="tag">audio</span>
+        <span class="tag">url</span>
+      </div>
+    </div>
+
+    <!-- ─────────────────────────────────────────────
+         CARD: Audio — From local Media folder
+    ───────────────────────────────────────────── -->
+    <div class="card"
+         data-type="audio"
+         data-tags="audio, local, media folder"
+         data-category="section-media">
+      <div class="card-header">
+        <span class="card-type-badge">Audio</span>
+        <span class="card-title">Audio from Media Folder</span>
+      </div>
+      <div class="card-body">
+        <p class="content-text" style="margin-bottom:12px">Description of this locally stored audio file.</p>
+        <div class="content-audio">
+          <!-- ── DEVELOPER: Replace filename ── -->
+          <audio controls preload="metadata">
+            <source src="Media/your-audio.mp3" type="audio/mpeg" />
+            <source src="Media/your-audio.ogg" type="audio/ogg" />
+            Your browser does not support the audio element.
+          </audio>
+        </div>
+      </div>
+      <div class="card-footer">
+        <span class="tag">local</span>
+        <span class="tag">mp3</span>
+      </div>
+    </div>
+
+  </div><!-- /card-grid -->
+</section>
+
+
+<!-- ══════════════════════════════════════════════
+     SECTION: Resources
+══════════════════════════════════════════════ -->
+<section id="section-resources">
+  <div class="section-header">
+    <span class="section-title">Resources</span>
+    <span class="section-count" id="count-section-resources">0 entries</span>
+  </div>
+
+  <div class="card-grid">
+
+    <!-- ─────────────────────────────────────────────
+         CARD: PDF — From local Media folder
+         Renders inline with fallback download link
+    ───────────────────────────────────────────── -->
+    <div class="card wide"
+         data-type="pdf"
+         data-tags="pdf, document, resource"
+         data-category="section-resources">
+      <div class="card-header">
+        <span class="card-type-badge">PDF</span>
+        <span class="card-title">Document from Media Folder</span>
+      </div>
+      <div class="card-body">
+        <!-- ── DEVELOPER: Replace filename in both src and href ── -->
+        <div class="content-pdf">
+          <iframe src="Media/your-document.pdf" title="PDF Document"></iframe>
+        </div>
+        <!-- Fallback link if iframe isn't supported -->
+        <div class="pdf-fallback" style="margin-top:10px">
+          <span class="pdf-icon">📄</span>
+          <div>
+            <div class="pdf-name">your-document.pdf</div>
+            <a href="Media/your-document.pdf" target="_blank" class="pdf-open">Open / Download →</a>
+          </div>
+        </div>
+      </div>
+      <div class="card-footer">
+        <span class="tag">pdf</span>
+        <span class="tag">local</span>
+      </div>
+    </div>
+
+    <!-- ─────────────────────────────────────────────
+         CARD: Code Snippet
+    ───────────────────────────────────────────── -->
+    <div class="card wide"
+         data-type="code"
+         data-tags="code, snippet, developer"
+         data-category="section-resources">
+      <div class="card-header">
+        <span class="card-type-badge">Code</span>
+        <span class="card-title">Code Snippet Example</span>
+      </div>
+      <div class="card-body">
+        <p class="content-text" style="margin-bottom:12px">Description of what this code does and when to use it.</p>
+        <div class="content-code">
+          <!-- ── DEVELOPER: Replace with your code ── -->
+          <pre>// Example JavaScript snippet
+```
+
+function greet(name) {
+return `Hello, ${name}! Welcome to InfoVault.`;
+}
+
+console.log(greet(“Developer”));</pre>
+</div>
+</div>
+<div class="card-footer">
+<span class="tag">javascript</span>
+<span class="tag">example</span>
+</div>
+</div>
+
+```
+  </div><!-- /card-grid -->
+</section>
+
+
+<!-- ══════════════════════════════════════════════
+     SECTION: References
+══════════════════════════════════════════════ -->
+<section id="section-references">
+  <div class="section-header">
+    <span class="section-title">References</span>
+    <span class="section-count" id="count-section-references">0 entries</span>
+  </div>
+
+  <div class="card-grid">
+
+    <!-- ─────────────────────────────────────────────
+         CARD: Multiple Links
+    ───────────────────────────────────────────── -->
+    <div class="card"
+         data-type="link"
+         data-tags="links, references, resources, external"
+         data-category="section-references">
+      <div class="card-header">
+        <span class="card-type-badge">Link</span>
+        <span class="card-title">Reference Links</span>
+      </div>
+      <div class="card-body">
+        <div class="content-link" style="display:flex; flex-direction:column; gap:8px">
+          <!-- ── DEVELOPER: Duplicate <a> blocks for more links ── -->
+          <a href="https://developer.mozilla.org" target="_blank" rel="noopener">
+            <span class="link-icon">🌐</span>
+            <div>
+              <div class="link-label">MDN Web Docs</div>
+              <div class="link-url">developer.mozilla.org</div>
+            </div>
+          </a>
+          <a href="https://github.com" target="_blank" rel="noopener">
+            <span class="link-icon">🐙</span>
+            <div>
+              <div class="link-label">GitHub</div>
+              <div class="link-url">github.com</div>
+            </div>
+          </a>
+        </div>
+      </div>
+      <div class="card-footer">
+        <span class="tag">references</span>
+        <span class="tag">web</span>
+      </div>
+    </div>
+
+    <!-- ─────────────────────────────────────────────
+         CARD: Text Notes
+    ───────────────────────────────────────────── -->
+    <div class="card"
+         data-type="text"
+         data-tags="notes, reference, text"
+         data-category="section-references">
+      <div class="card-header">
+        <span class="card-type-badge">Text</span>
+        <span class="card-title">Notes & Observations</span>
+      </div>
+      <div class="card-body">
+        <div class="content-text">
+          <p>Place any text-based notes, observations, or written reference material here. Supports full paragraphs and multi-line content.</p>
+          <p>The card will expand naturally to fit the content length.</p>
+        </div>
+      </div>
+      <div class="card-footer">
+        <span class="tag">notes</span>
+      </div>
+    </div>
+
+  </div><!-- /card-grid -->
+</section>
+
+<!-- ══════════════════════════════════════════════
+     HOW TO ADD A NEW SECTION:
+     1. Add a <section id="section-YOUR-ID"> block here (copy one above).
+     2. Add a matching nav-link in the sidebar.
+     3. Add a section-count span with id="count-section-YOUR-ID".
+     That's it — search and filtering work automatically.
+══════════════════════════════════════════════ -->
+```
+
+  </main><!-- /main -->
+</div><!-- /shell -->
+
+<!-- ═══════════════════════════════════════════════════════════════
+     JAVASCRIPT — Search, Filter, Navigation
+     You do NOT need to edit this section unless adding new features.
+═══════════════════════════════════════════════════════════════ -->
+
+<script>
+  const cards      = Array.from(document.querySelectorAll('.card'));
+  const sections   = Array.from(document.querySelectorAll('section[id]'));
+  const chips      = Array.from(document.querySelectorAll('.chip[data-type]'));
+  const navLinks   = Array.from(document.querySelectorAll('.nav-link[data-section]'));
+  const typeNavs   = Array.from(document.querySelectorAll('.nav-link[data-type-nav]'));
+  const searchInput = document.getElementById('search-input');
+
+  let activeType = 'all';
+  let activeQuery = '';
+
+  /* ── Update visible cards and section counts ── */
+  function applyFilters() {
+    const q = activeQuery.toLowerCase();
+
+    sections.forEach(sec => {
+      const sectionCards = cards.filter(c => c.dataset.category === sec.id);
+      let visibleCount = 0;
+
+      sectionCards.forEach(card => {
+        const typeMatch = activeType === 'all' || card.dataset.type === activeType;
+        const tags      = (card.dataset.tags || '').toLowerCase();
+        const title     = (card.querySelector('.card-title')?.textContent || '').toLowerCase();
+        const bodyText  = (card.querySelector('.card-body')?.textContent || '').toLowerCase();
+        const queryMatch = !q || tags.includes(q) || title.includes(q) || bodyText.includes(q);
+
+        const show = typeMatch && queryMatch;
+        card.style.display = show ? '' : 'none';
+        if (show) visibleCount++;
+      });
+
+      /* Show/hide section based on whether it has visible cards */
+      sec.style.display = visibleCount > 0 ? '' : 'none';
+
+      /* Update count badge */
+      const countEl = document.getElementById('count-' + sec.id);
+      if (countEl) countEl.textContent = visibleCount + (visibleCount === 1 ? ' entry' : ' entries');
+    });
+  }
+
+  /* ── Chip filter ── */
+  chips.forEach(chip => {
+    chip.addEventListener('click', () => {
+      chips.forEach(c => c.classList.remove('active'));
+      chip.classList.add('active');
+      activeType = chip.dataset.type;
+      applyFilters();
+
+      /* sync type nav in sidebar */
+      typeNavs.forEach(n => n.classList.remove('active'));
+      if (activeType !== 'all') {
+        const match = typeNavs.find(n => n.dataset.typeNav === activeType);
+        if (match) match.classList.add('active');
+      }
+    });
+  });
+
+  /* ── Type nav in sidebar ── */
+  typeNavs.forEach(nav => {
+    nav.addEventListener('click', () => {
+      typeNavs.forEach(n => n.classList.remove('active'));
+      nav.classList.add('active');
+      activeType = nav.dataset.typeNav;
+
+      /* sync chips */
+      chips.forEach(c => {
+        c.classList.toggle('active', c.dataset.type === activeType);
+      });
+      applyFilters();
+    });
+  });
+
+  /* ── Section nav in sidebar ── */
+  navLinks.forEach(link => {
+    link.addEventListener('click', () => {
+      navLinks.forEach(n => n.classList.remove('active'));
+      link.classList.add('active');
+
+      /* Reset filters to show all types so the target section is visible */
+      activeType = 'all';
+      activeQuery = '';
+      searchInput.value = '';
+      chips.forEach(c => c.classList.toggle('active', c.dataset.type === 'all'));
+      typeNavs.forEach(n => n.classList.remove('active'));
+      applyFilters();
+
+      /* Scroll to section */
+      const target = document.getElementById(link.dataset.section);
+      if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
+  });
+
+  /* ── Search ── */
+  searchInput.addEventListener('input', () => {
+    activeQuery = searchInput.value;
+    applyFilters();
+  });
+
+  /* ── Init ── */
+  applyFilters();
+</script>
+
+</body>
+</html>
