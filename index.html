@@ -312,6 +312,11 @@
       max-height: 260px;
       object-fit: cover;
       border-radius: var(--radius);
+      cursor: pointer;
+      transition: filter var(--transition);
+    }
+    .content-image img:hover {
+      filter: brightness(1.1);
     }
     .content-image .caption {
       font-size: 11px;
@@ -341,6 +346,11 @@
     .content-gif img {
       width: 100%;
       border-radius: var(--radius);
+      cursor: pointer;
+      transition: filter var(--transition);
+    }
+    .content-gif img:hover {
+      filter: brightness(1.1);
     }
 
     /* Hyperlink */
@@ -415,6 +425,72 @@
     main::-webkit-scrollbar { width: 6px; }
     main::-webkit-scrollbar-thumb { background: var(--border); border-radius: 6px; }
 
+    /* ─── Image Modal ───────────────────────────────────────────── */
+    .image-modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.85);
+      z-index: 1000;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+      animation: fadeIn 0.2s ease;
+    }
+    .image-modal.active {
+      display: flex;
+    }
+    .image-modal-content {
+      position: relative;
+      max-width: 90vw;
+      max-height: 90vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+    }
+    .image-modal img {
+      max-width: 100%;
+      max-height: 80vh;
+      object-fit: contain;
+      border-radius: var(--radius-lg);
+      cursor: default;
+    }
+    .modal-close {
+      position: absolute;
+      top: -40px;
+      right: 0;
+      background: none;
+      border: none;
+      color: var(--text);
+      font-size: 28px;
+      cursor: pointer;
+      transition: color var(--transition);
+      padding: 0;
+      width: 40px;
+      height: 40px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .modal-close:hover {
+      color: var(--accent);
+    }
+    .modal-caption {
+      color: var(--text-muted);
+      font-size: 12px;
+      font-style: italic;
+      text-align: center;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
     /* ─── Responsive ────────────────────────────────────────────── */
     @media (max-width: 800px) {
       .shell {
@@ -425,6 +501,12 @@
       main { padding: 20px 16px; }
       .card-grid { grid-template-columns: 1fr; }
       .filter-chips { display: flex; }
+      .modal-close {
+        top: 10px;
+        background: var(--surface);
+        border-radius: var(--radius);
+        border: 1px solid var(--border);
+      }
     }
 
     /* ─── Fade-in on load ───────────────────────────────────────── */
@@ -627,7 +709,7 @@
 
     <!-- ─────────────────────────────────────────────
          CARD: Image — Embedded from URL
-    ───────────────────────────────────────────── -->
+    ──────────────────────────────��────────────── -->
     <div class="card"
          data-type="image"
          data-tags="image, photo, visual"
@@ -664,9 +746,6 @@
         <div class="content-image">
           <!-- ── DEVELOPER: Replace filename ── -->
           <img src="Media/your-image.jpg" alt="Description of the image" loading="lazy" />
-
-          <img src="Media/Ancient Hebrew Cosmology.jpg" alt="Description" loading="lazy" />
-          
           <p class="caption">Caption: Stored locally in /Media/</p>
         </div>
       </div>
@@ -690,7 +769,7 @@
       <div class="card-body">
         <div class="content-gif">
           <!-- ── DEVELOPER: Replace src ── -->
-          <img src="https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExd2NqeGFhdjV0dWxldmduZnE5N2hqY213OWVteXFmOWpwcjE2NjU5NiZlcD12MV9naWZzX3RyZW5kaW5nJmN0PWc/3o7abKhOpu0NwenH3O/giphy.gif" alt="Animated GIF description" loading="lazy" />
+          <img src="https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExd2NqeGFhdjV0dWxldmduZnE5N2hqY213OWVteXFmOWpwcjE2NjU5NiZlcD12MV9naWZzX3RyZW5kaW5nJmN0PWc/3o7abKhOpu0NwenH3O/giphy.gif" alt="Animated GIF from Giphy" loading="lazy" />
         </div>
       </div>
       <div class="card-footer">
@@ -904,7 +983,7 @@ function greet(name) {
 return `Hello, ${name}! Welcome to InfoVault.`;
 }
 
-console.log(greet(“Developer”));</pre>
+console.log(greet("Developer"));</pre>
 </div>
 </div>
 <div class="card-footer">
@@ -1002,111 +1081,67 @@ console.log(greet(“Developer”));</pre>
   </main><!-- /main -->
 </div><!-- /shell -->
 
-<!-- ═══════════════════════════════════════════════════════════════
-     JAVASCRIPT — Search, Filter, Navigation
-     You do NOT need to edit this section unless adding new features.
-═══════════════════════════════════════════════════════════════ -->
+<!-- ═══════════════════════════════════════════════
+     IMAGE MODAL (for enlarging images on click)
+═══════════════════════════════════════════════ -->
+<div class="image-modal" id="image-modal">
+  <div class="image-modal-content">
+    <button class="modal-close" aria-label="Close image modal">✕</button>
+    <img id="modal-image" src="" alt="Enlarged image" />
+    <p class="modal-caption" id="modal-caption"></p>
+  </div>
+</div>
 
 <script>
-  const cards      = Array.from(document.querySelectorAll('.card'));
-  const sections   = Array.from(document.querySelectorAll('section[id]'));
-  const chips      = Array.from(document.querySelectorAll('.chip[data-type]'));
-  const navLinks   = Array.from(document.querySelectorAll('.nav-link[data-section]'));
-  const typeNavs   = Array.from(document.querySelectorAll('.nav-link[data-type-nav]'));
-  const searchInput = document.getElementById('search-input');
+  // ═══════════════════════════════════════════════════════════════
+  // IMAGE MODAL FUNCTIONALITY
+  // ═══════════════════════════════════════════════════════════════
+  
+  const imageModal = document.getElementById('image-modal');
+  const modalImage = document.getElementById('modal-image');
+  const modalCaption = document.getElementById('modal-caption');
+  const closeButton = document.querySelector('.modal-close');
 
-  let activeType = 'all';
-  let activeQuery = '';
-
-  /* ── Update visible cards and section counts ── */
-  function applyFilters() {
-    const q = activeQuery.toLowerCase();
-
-    sections.forEach(sec => {
-      const sectionCards = cards.filter(c => c.dataset.category === sec.id);
-      let visibleCount = 0;
-
-      sectionCards.forEach(card => {
-        const typeMatch = activeType === 'all' || card.dataset.type === activeType;
-        const tags      = (card.dataset.tags || '').toLowerCase();
-        const title     = (card.querySelector('.card-title')?.textContent || '').toLowerCase();
-        const bodyText  = (card.querySelector('.card-body')?.textContent || '').toLowerCase();
-        const queryMatch = !q || tags.includes(q) || title.includes(q) || bodyText.includes(q);
-
-        const show = typeMatch && queryMatch;
-        card.style.display = show ? '' : 'none';
-        if (show) visibleCount++;
+  // Add click listeners to all images in content-image and content-gif
+  document.addEventListener('DOMContentLoaded', () => {
+    const clickableImages = document.querySelectorAll('.content-image img, .content-gif img');
+    
+    clickableImages.forEach(img => {
+      img.addEventListener('click', function() {
+        modalImage.src = this.src;
+        modalImage.alt = this.alt;
+        
+        // Get caption if it exists (for content-image cards)
+        const captionElement = this.parentElement.querySelector('.caption');
+        modalCaption.textContent = captionElement ? captionElement.textContent : '';
+        
+        imageModal.classList.add('active');
+        document.body.style.overflow = 'hidden';
       });
-
-      /* Show/hide section based on whether it has visible cards */
-      sec.style.display = visibleCount > 0 ? '' : 'none';
-
-      /* Update count badge */
-      const countEl = document.getElementById('count-' + sec.id);
-      if (countEl) countEl.textContent = visibleCount + (visibleCount === 1 ? ' entry' : ' entries');
-    });
-  }
-
-  /* ── Chip filter ── */
-  chips.forEach(chip => {
-    chip.addEventListener('click', () => {
-      chips.forEach(c => c.classList.remove('active'));
-      chip.classList.add('active');
-      activeType = chip.dataset.type;
-      applyFilters();
-
-      /* sync type nav in sidebar */
-      typeNavs.forEach(n => n.classList.remove('active'));
-      if (activeType !== 'all') {
-        const match = typeNavs.find(n => n.dataset.typeNav === activeType);
-        if (match) match.classList.add('active');
-      }
     });
   });
 
-  /* ── Type nav in sidebar ── */
-  typeNavs.forEach(nav => {
-    nav.addEventListener('click', () => {
-      typeNavs.forEach(n => n.classList.remove('active'));
-      nav.classList.add('active');
-      activeType = nav.dataset.typeNav;
-
-      /* sync chips */
-      chips.forEach(c => {
-        c.classList.toggle('active', c.dataset.type === activeType);
-      });
-      applyFilters();
-    });
+  // Close modal when clicking close button
+  closeButton.addEventListener('click', () => {
+    imageModal.classList.remove('active');
+    document.body.style.overflow = '';
   });
 
-  /* ── Section nav in sidebar ── */
-  navLinks.forEach(link => {
-    link.addEventListener('click', () => {
-      navLinks.forEach(n => n.classList.remove('active'));
-      link.classList.add('active');
-
-      /* Reset filters to show all types so the target section is visible */
-      activeType = 'all';
-      activeQuery = '';
-      searchInput.value = '';
-      chips.forEach(c => c.classList.toggle('active', c.dataset.type === 'all'));
-      typeNavs.forEach(n => n.classList.remove('active'));
-      applyFilters();
-
-      /* Scroll to section */
-      const target = document.getElementById(link.dataset.section);
-      if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    });
+  // Close modal when clicking outside the image
+  imageModal.addEventListener('click', (e) => {
+    if (e.target === imageModal) {
+      imageModal.classList.remove('active');
+      document.body.style.overflow = '';
+    }
   });
 
-  /* ── Search ── */
-  searchInput.addEventListener('input', () => {
-    activeQuery = searchInput.value;
-    applyFilters();
+  // Close modal with Escape key
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && imageModal.classList.contains('active')) {
+      imageModal.classList.remove('active');
+      document.body.style.overflow = '';
+    }
   });
-
-  /* ── Init ── */
-  applyFilters();
 </script>
 
 </body>
